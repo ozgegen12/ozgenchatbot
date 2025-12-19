@@ -1,0 +1,147 @@
+<!-- START OF FILE index.html -->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Özgen Plastik Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Toggle Butonu Formu -->
+    <form method="POST" action="{{ url_for('index') }}#bottom-anchor">
+        <input type="hidden" name="action" value="toggle_chat">
+        <button type="submit" class="toggle-btn">
+            💬 {{ "Sohbeti Kapat" if chat_open else "Müşteri Asistanınız" }}
+        </button>
+    </form>
+
+    <!-- Flash mesajları -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+              <button type="button" class="close-flash" onclick="this.parentElement.style.display='none';">×</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% if chat_open %}
+        <div class="chat-box">
+            <h2>Özgen Plastik Müşteri Hizmetleri Asistanı</h2>
+            <p style="font-size: 12px;">Değerli Müşterilerimiz, perakende satışlarımız yalnızca Trendyol üzerinden yapılmaktadır.</p>
+
+            <!-- Mesaj Gönderme Formu -->
+            <form method="POST" action="{{ url_for('index') }}#bottom-anchor">
+                <input type="hidden" name="action" value="send_message">
+
+                <div class="chat-messages" id="chatMessages">
+                    {% if not chat_history %}
+                        <p class="bot-message"><strong>Sistem:</strong> Merhaba! Nasıl yardımcı olabilirim? <br></p>
+                    {% endif %}
+                    {% for sender, message in chat_history %}
+                        <p class="{% if sender == 'Sen' %}user-message{% else %}bot-message{% endif %}">
+                            <strong>{{ sender }}:</strong> {{ message|safe }}
+                        </p>
+                    {% endfor %}
+                    <!-- Kaydırma için alt çapa -->
+                    <div id="bottom-anchor"></div>
+                </div>
+
+                <div class="chat-input-form">
+                    <textarea name="user_input" required placeholder="Mesajınızı buraya yazın..." rows="1" autofocus></textarea>
+                    <button type="submit">Gönder</button>
+                    <button type="reset" onclick="this.form.elements['user_input'].value=''">Temizle</button>
+                </div>
+            </form>
+        </div>
+    {% endif %}
+
+    <!-- Scriptler -->
+    <script>
+    // Mesajları her yüklemede alta kaydır
+    (function() {
+        var chatMessages = document.getElementById("chatMessages");
+        var bottomAnchor = document.getElementById("bottom-anchor");
+        if (bottomAnchor) {
+            // Çapanın görünür olması için ona kaydır
+            bottomAnchor.scrollIntoView({ behavior: "instant", block: "end" });
+        } else if (chatMessages) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    })();
+
+    const textarea = document.querySelector('.chat-input-form textarea');
+    if (textarea) {
+        {% if chat_open %}
+        if (document.visibilityState === "visible") {
+            requestAnimationFrame(() => textarea.focus());
+        }
+        {% endif %}
+
+        function adjustTextareaHeight() {
+            textarea.style.height = 'auto';
+            let newHeight = textarea.scrollHeight;
+            const maxHeight = 80;
+            if (newHeight > maxHeight) {
+                newHeight = maxHeight;
+                textarea.style.overflowY = 'auto';
+            } else {
+                textarea.style.overflowY = 'hidden';
+            }
+            textarea.style.height = newHeight + 'px';
+        }
+        textarea.addEventListener('input', adjustTextareaHeight);
+
+        const chatBoxObserver = new MutationObserver((mutationsList) => {
+            for(const mutation of mutationsList) {
+                if (mutation.type === 'childList') {
+                    const chatBoxElement = document.querySelector('.chat-box');
+                    if (chatBoxElement && chatBoxElement.contains(textarea)) {
+                        adjustTextareaHeight();
+                        if (document.visibilityState === "visible") {
+                            requestAnimationFrame(() => textarea.focus());
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+        if (document.querySelector('.chat-box')) {
+            adjustTextareaHeight();
+        } else {
+            chatBoxObserver.observe(document.body, { childList: true, subtree: true });
+        }
+
+        textarea.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                const form = event.target.closest('form');
+                if (form) {
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        submitButton.click();
+                    } else {
+                        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                    }
+                }
+            }
+        });
+    }
+
+    // Flash mesajlarını kendiliğinden sil
+    setTimeout(function() {
+        let flashMessages = document.querySelectorAll('.flash-messages-container .alert');
+        flashMessages.forEach(function(msg) {
+            msg.style.transition = 'opacity 0.5s ease-out';
+            msg.style.opacity = '0';
+            setTimeout(() => { if(msg.parentElement && msg.parentElement.contains(msg)) msg.parentElement.removeChild(msg); }, 500);
+        });
+    }, 7000);
+    </script>
+</body>
+</html>

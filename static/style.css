@@ -1,0 +1,354 @@
+/* ... (mevcut CSS kodunuzun başı) ... */
+
+/* RAG Belge Yönetimi Bölümü Stil Geliştirmeleri */
+.pdf-management {
+    padding: 12px 15px; /* içeri doğru boşluk */
+    background-color: #f0f4f8; /* arka plan */
+    border-bottom: 1px solid #dde2e6; /* alt çizgi */
+    border-top: 1px solid #dde2e6; /* üst çizgi */
+    margin-bottom: 10px; /* üste doğru boşluk */
+}
+
+.pdf-management p.rag-title { /* Yeni bir sınıf ekledik */
+    margin: 0 0 10px 0; /* Başlık altı boşluk */
+    font-size: 0.95em;
+    color: #334e68; /* Daha koyu bir başlık rengi */
+    font-weight: 600; /*yazı kalınlığı */
+    border-bottom: 1px solid #e0e6eb; /* Başlık altına ince bir çizgi */
+    padding-bottom: 8px; /* Çizgi ile metin arası boşluk */
+}
+
+.pdf-management .rag-status-info { /* Yeni bir sınıf ekledik */
+    font-size: 0.85em;
+    color: #586a7a;
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    background-color: #e6eaf0;
+    border-radius: 4px; /*bir ögenin köşelere ait ovalliğini tanımlanabilir*/
+    border-left: 3px solid #007bff; /* Vurgu için sol kenarlık */
+}
+.pdf-management .rag-status-info strong {
+    color: #0056b3; /* Vurgulu metin için daha koyu mavi */
+}
+
+.pdf-management form {
+    margin-bottom: 8px;
+}
+.pdf-management form:last-child {
+    margin-bottom: 0;
+}
+
+.pdf-management label {
+    font-size: 0.85em;
+    color: #455a64;
+    display: block; /* bir elemanın görüntülenip görüntülenmeyeceğini veya nasıl görüntüleneceğini belirtir. Block Satırı kaplar. */
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.pdf-management input[type="file"] {
+    font-size: 0.85em;
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: #fff;
+    width: calc(100% - 18px); /* Buton için yer bırakmayacak şekilde tam genişlik - padding */
+    box-sizing: border-box; /*öğenin genişliği ve yüksekliği, öğenin içeriğine, dolgusuna ve kenarlığına göre hesaplanır. */
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /*zamanlama fonksiyonları. kenarlık rengi ve gölge efektinin 0.15 saniyede yumuşak geçişlerle değişmesini sağlar. ease - in - out animasyonları yavaş başlar, ortada hızlanır ve yavaş biter.*/
+}
+.pdf-management input[type="file"]:focus { /*dosya yükleme alanı odaklandığında (kullanıcı tıkladığında) nasıl görüneceğini belirliyor. */
+    border-color: #80bdff; /* Odaklanıldığında kenarlık rengi maviye döner */
+    outline: 0;  /* Varsayılan dış çizgi (outline) kaldırılır */
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);  /* Mavi tonlarında yumuşak bir dış gölge verilir */
+}
+/* Tarayıcıya özel dosya seçme butonu stilini biraz daha iyi hale getirme (kısıtlıdır) */
+.pdf-management input[type="file"]::file-selector-button {
+    padding: 6px 10px;
+    margin-right: 10px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background-color 0.2s ease-in-out;
+}
+.pdf-management input[type="file"]::file-selector-button:hover { /* hover: öğelerin üzerine fareyle geldiğinizde onları seçer*/
+    background-color: #545b62;
+}
+
+.pdf-action-btn {
+    padding: 7px 12px; /* Biraz daha büyük butonlar */
+    border: none;
+    border-radius: 5px; /* Daha yuvarlak kenarlar */
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 500; /* Daha okunaklı */
+    color: white;
+    margin-left: 0; /* Yükle butonu için sol boşluğu kaldırıp full width yapacağız */
+    margin-top: 5px; /* Input ile arasında boşluk */
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+    width: 100%; /* Butonları tam genişlik yapalım */
+    box-sizing: border-box;
+}
+.pdf-action-btn:hover {
+    opacity: 0.9; /* saydamlık */
+    transform: translateY(-1px); /* Hafif yukarı kalkma efekti */
+}
+.pdf-action-btn:active { /* genellikle bir kullanıcının bir öğeye tıkladığında uygulanan durumdur */
+    transform: translateY(0px);
+}
+
+/* Yükle butonu için (Bootstrap primary benzeri) */
+.pdf-action-btn.upload {
+    background-color: #007bff; /* Ana mavi */
+}
+.pdf-action-btn.upload:hover {
+    background-color: #0069d9;
+}
+
+/* Temizle butonu için (Bootstrap warning/danger arası bir renk) */
+.pdf-action-btn.clear {
+    background-color: #dc3545; /* Kırmızı */
+    margin-bottom: 10px; /* Yükleme formu ile arasında boşluk */
+}
+.pdf-action-btn.clear:hover {
+    background-color: #c82333;
+}
+
+.pdf-management .rag-note { /* Yeni bir sınıf ekledik */
+    font-size: 0.75em;
+    color: #6c757d;
+    margin-top: 8px;
+    line-height: 1.3;
+}
+
+/* Model Seçimi Bölümü için de ufak bir iyileştirme */
+.model-selection {
+    padding: 12px 15px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+}
+.model-selection p {
+    margin: 0 0 10px 0; /* Alt boşluğu artır */
+    font-size: 0.95em; /* Biraz büyüt */
+    color: #495057; /* Biraz daha koyu */
+    font-weight: 600;
+}
+.model-selection label {
+    margin-right: 10px; /* Aralığı azalt */
+    margin-bottom: 5px; /* Alt alta gelirse diye */
+    font-size: 0.85em; /* Biraz küçült */
+    display: inline-flex; /*Dışarıdan bakınca span gibi satır içi gibi görünür (blok gibi tüm satırı kaplamaz).flex gibi hizalar, böler, esnetir.*/
+    align-items: center; /* flex konteyner içindeki öğeleri dikey eksende ortalamaya yarar. */
+}
+.model-selection input[type="radio"] {
+    margin-right: 4px;
+    transform: scale(0.9); /* Radyo butonunu biraz küçült */
+}
+
+body {
+font-family: sans-serif;
+margin: 0; /* Sayfanın kenarlarında boşluk olmaması için */
+padding: 0;
+background-color: #eef2f5; /* Arka plan rengi isteğe bağlı */
+}
+
+.toggle-btn {
+position: fixed;
+bottom: 20px;
+right: 20px;
+background-color: #0084ff;
+color: white;
+padding: 10px 15px;
+border: none;
+border-radius: 25px;
+cursor: pointer;
+z-index: 1000; /* Diğer elementlerin üzerinde kalması için */
+box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+font-size: 1em;
+}
+
+.toggle-btn:hover {
+background-color: #006acc;
+}
+
+.chat-box {
+position: fixed;
+bottom: 80px; /* Toggle butonunun biraz üzerinde */
+right: 20px;
+width: 320px; /* Biraz daha genişletildi */
+max-height: calc(100vh - 100px); /* Ekran yüksekliğine göre ayarlandı */
+display: flex; /* Flexbox ile iç düzenleme */
+flex-direction: column; /* Elementleri dikey sırala */
+background: #ffffff; /* Arka plan rengi */
+border-radius: 10px;
+padding: 0; /* Padding'i iç elementlere bırakalım */
+box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+z-index: 999;
+overflow: hidden; /* İçerik taşmasını engellemek için */
+}
+
+.chat-box h2 {
+background-color: #007bff;
+color: white;
+padding: 12px 15px;
+margin: 0;
+font-size: 1.1em;
+border-top-left-radius: 10px;
+border-top-right-radius: 10px;
+text-align: center;
+}
+
+.model-selection {
+padding: 10px 15px;
+background-color: #f8f9fa;
+border-bottom: 1px solid #e0e0e0;
+}
+
+.model-selection p {
+margin: 0 0 8px 0;
+font-size: 0.9em;
+color: #555;
+font-weight: bold;
+}
+
+.model-selection label {
+margin-right: 15px;
+font-size: 0.9em;
+cursor: pointer;
+display: inline-flex; /* Hizalama için */
+align-items: center; /* Hizalama için */
+}
+.model-selection input[type="radio"] {
+margin-right: 5px;
+accent-color: #007bff; /* radyo düğmeleri ve onay kutuları gibi form denetimlerinin rengini ayarlamanıza olanak tanır */
+}
+
+.chat-messages {
+flex-grow: 1; /*  Bir öğeyi diğerlerine göre daha büyük göstermek için bu özelliği kullanıyoruz. */
+height: 250px; /* Varsayılan yükseklik, ayarlanabilir */
+overflow-y: auto; /* bir blok düzeyindeki öğenin üst ve alt kenarlarından taştığında içeriğin davranışını belirtir */
+background: #ffffff;
+padding: 10px 15px;
+border-bottom: 1px solid #e0e0e0;
+}
+
+.chat-messages p {
+margin: 0 0 10px 0;
+padding: 8px 12px;
+border-radius: 18px;
+line-height: 1.4;
+max-width: 85%;
+word-wrap: break-word; /* uzun kelimeleri bölmek/kırmak ve bunları bir sonraki satıra sarmak için kullanılır. */ 
+}
+
+.chat-messages p strong {
+font-weight: bold;
+display: block;
+margin-bottom: 3px;
+font-size: 0.8em;
+color: #333;
+}
+
+/* Kullanıcı mesajları için (Sen) */
+.chat-messages p.user-message {
+background-color: #007bff;
+color: white;
+margin-left: auto; /* Sağa yasla */
+border-bottom-right-radius: 5px; /* Baloncuk görünümü */
+}
+.chat-messages p.user-message strong {
+color: #e0e0e0;
+}
+
+/* Bot mesajları için */
+.chat-messages p.bot-message {
+background-color: #e9ecef;
+color: #343a40;
+margin-right: auto; /* Sola yasla */
+border-bottom-left-radius: 5px; /* Baloncuk görünümü */
+}
+
+.chat-input-form {
+padding: 10px 15px;
+background-color: #f8f9fa;
+display: flex; /* Flexbox ile textarea ve butonları yan yana */
+align-items: center; /* Dikeyde ortala */
+}
+
+.chat-input-form textarea {
+flex-grow: 1; /* Kalan alanı kapla */
+padding: 8px 10px;
+border: 1px solid #ced4da;
+border-radius: 18px; /* Yuvarlak kenarlar */
+min-height: 20px; /* Tek satır gibi başlasın */
+max-height: 80px; /* Çok fazla büyümesin */
+resize: none; /* Kullanıcı boyutlandıramasın */
+font-size: 0.95em;
+line-height: 1.4;
+margin-right: 8px;
+box-sizing: border-box;
+}
+
+.chat-input-form button {
+padding: 8px 12px;
+border: none;
+border-radius: 18px;
+cursor: pointer;
+font-size: 0.9em;
+margin-left: 5px; /* Butonlar arası boşluk */
+}
+
+.chat-input-form button[type="submit"] {
+background-color: #28a745; /* Yeşil gönder butonu */
+color: white;
+}
+.chat-input-form button[type="submit"]:hover {
+background-color: #218838;
+}
+
+.chat-input-form button[type="reset"] {
+background-color: #6c757d; /* Gri temizle butonu */
+color: white;
+}
+.chat-input-form button[type="reset"]:hover {
+background-color: #5a6268;
+}
+
+.flash-messages-container {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2000; /* Diğer her şeyin üzerinde */
+        width: auto;
+        min-width: 300px; /* Minimum genişlik */
+        max-width: 90%;   /* Maksimum genişlik */
+    }
+    .alert {
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        border: 1px solid transparent;
+        border-radius: .25rem;
+        color: #fff;
+        display: flex; /* İçeriği ve kapatma butonunu hizalamak için */
+        justify-content: space-between; /* Aralarına boşluk koy */
+        align-items: center; /* Dikeyde ortala */
+    }
+    .alert-success { background-color: #28a745; }
+    .alert-danger { background-color: #dc3545; }
+    .alert-warning { background-color: #ffc107; color: #212529; } /* Warning için metin rengi */
+    .alert-info { background-color: #17a2b8; }
+    .alert .close-flash {
+        background: none;
+        border: none;
+        color: inherit; /* Ana metin rengini al */
+        font-size: 1.2rem;
+        line-height: 1;
+        opacity: 0.8;
+        cursor: pointer;
+        padding: 0 0 0 15px; /* Soluna boşluk */
+    }
+
