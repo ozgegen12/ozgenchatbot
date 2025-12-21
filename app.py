@@ -249,10 +249,11 @@ def index():
 
 # --- WHATSAPP WEBHOOK ENTEGRASYONU ---
 
-
 VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN", "varsayilan-dogrulama-kodu")
 WHATSAPP_TOKEN = os.environ.get("WHATSAPP_TOKEN")
 PHONE_NUMBER_ID = os.environ.get("PHONE_NUMBER_ID")
+CATALOG_URL = "https://ads.ozgenplastik.com/assets/pdf/catalog/1238e9b6-fb8b-45cf-9f08-74f9e235f8d0.pdf"
+
 
 @app.route("/api/whatsapp", methods=['GET', 'POST'])
 def webhook_whatsapp():
@@ -274,10 +275,45 @@ def webhook_whatsapp():
                     for change in entry.get("changes", []):
                         if "messages" in change.get("value", {}):
                             for message in change.get("value", {}).get("messages", []):
+                                if message.get("type") == "image":
+                                    from_number = message.get("from")
+                                    reply_text = (
+                                        "Fotoğraf üzerinden ürün tespiti şu an aktif değil. 🙏\n"
+                                        "Ürünü katalogdan bulup ürün adını veya ürün kodunu yazarsanız hemen yardımcı olurum.\n\n"
+                                        f"Katalog: {CATALOG_URL}\n\n"
+                                        "Örn: “322” veya “Büyük rattan tabure”")
+                                    send_whatsapp_message(from_number, reply_text)
+                                    try:
+                                        logger.info(f"WhatsApp resim mesajı kaydediliyor: {from_number}")
+                                        memory_manager.save_conversation(
+                                             f"WhatsApp-{from_number}",
+                                            "[IMAGE]",
+                                             reply_text)
+                                        logger.info("✅ WhatsApp resim yönlendirmesi kaydedildi")
+                                    except Exception as e_mem:
+                                        logger.error(
+                                            "WhatsApp resim yönlendirmesi kaydedilirken hata: %s",
+                                            e_mem,
+                                            exc_info=True)
+                                    continue   
                                 if message.get("type") == "text":
                                     from_number = message.get("from")
                                     msg_body = message.get("text", {}).get("body")
                                     logger.info(f"'{from_number}' numarasından mesaj: '{msg_body}'")
+                                    msg_body = (msg_body or "").strip()
+                                    if not msg_body:
+                                        continue
+                                    # 2) ÖDEME / IBAN SORUSU → OFİSE YÖNLENDİR (LLM'e gitme)
+                                    if is_payment_question(msg_body):
+                                        reply_text = (
+                                            "Ödeme/IBAN bilgileri için güvenlik  nedeniyle buradan paylaşım yapamıyoruz.\n"
+                                             "Lütfen ofisimizle iletişime geçin: +90 545 659 54 31")
+                                        send_whatsapp_message(from_number, reply_text)
+                                        try:
+                                            memory_manager.save_conversation(f"WhatsApp-{from_number}", msg_body, reply_text)
+                                        except Exception as e_mem:
+                                            logger.error("WhatsApp ödeme yönlendirme kaydı hatası: %s", e_mem, exc_info=True)
+                                        continue
 
                                     # Gelen mesajın dilini tespit et
                                     try:
@@ -294,6 +330,15 @@ def webhook_whatsapp():
                                         logger.warning(f"Desteklenmeyen dil ({detected_lang}) tespit edildi, varsayılan 'tr' kullanılıyor.")
                                     else:
                                         lang_to_use = detected_lang
+                                    if detected_lang == "en":
+                                        reply_text = ("For English support and export inquiries, please contact:\n"
+                                        "export@ozgenplastik.com")
+                                        send_whatsapp_message(from_number, reply_text)
+                                        try: 
+                                            memory_manager.save_conversation(f"WhatsApp-{from_number}", msg_body, reply_text)
+                                        except Exception as e_mem:
+                                            logger.error("WhatsApp export yönlendirme kaydı hatası: %s", e_mem, exc_info=True)
+                                        continue    
 
                                     # Chatbot'umuzdan yanıt alalım
                                     bot_response = openai_main_func(msg_body)
@@ -316,6 +361,20 @@ def webhook_whatsapp():
                 return "Internal Server Error", 500
 
         return "Not a WhatsApp Business Account event", 404
+
+def is_payment_question(text: str) -> bool:
+    if not text:
+        return False
+    t = text.lower()
+
+    keywords = [
+        "iban", "ıban",
+        "hesap no", "hesap numara", "hesap numarası",
+        "banka", "eft", "havale", "swift",
+        "ödeme", "odeme", "payment", "pay",
+        "kredi kart", "kredi kartı", "credit card", "card", "pos"
+    ]
+    return any(k in t for k in keywords)
 
 def send_whatsapp_message(to_number, text_message):
     """Verilen numaraya metin mesajı gönderir."""
