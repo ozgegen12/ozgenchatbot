@@ -334,24 +334,23 @@ def openai_func(user_input):
     # --- YENİ: KATALOG / ÜRÜN LİSTESİ İSTEĞİ → DİREKT YÖNLENDİR ---
     t = (user_input or "").lower()
     catalog_keywords = [
-    "katalog", "catalog", "katolog", "catalogue",
+   "katalog", "catalog", "katolog", "catalogue",
     "ürün list", "urun list", "product list", "list of products",
-    "tüm ürün", "tum urun", "all products",
-    "ürünleriniz", "urunleriniz", "products",
-    "fiyat list", "price list"]
+    "fiyat list", "price list",
+    "tüm ürün", "tum urun", "all products"]
 
     if any(k in t for k in catalog_keywords):
         if lang == "en":
             return (
             "You can view our full product list in the catalog:\n"
             f"Catalog: {CATALOG_URL}\n"
-            f"WhatsApp: {OFFICE_WHATSAPP_LINK}"
+            
         )
         else:
             return (
         "Tüm ürün listemizi katalog üzerinden inceleyebilirsiniz:\n"
         f"Katalog: {CATALOG_URL}\n"
-        f"WhatsApp: {OFFICE_WHATSAPP_LINK}"
+        
     )
 
 
@@ -744,21 +743,22 @@ def _handle_product_query(user_input: str, products: list[str], retriever, lang:
 
     return "\n\n".join(all_responses)
 
+
 def _handle_category_query(user_input: str, category: str, retriever, lang: str):
-    """Kategori / ürün listesi sorgularını kataloğa yönlendirir."""
-    responses = {
-        'tr': (
-            "Tüm ürün listemizi katalog üzerinden inceleyebilirsiniz:\n"
-            f"Katalog: {CATALOG_URL}\n"
-            f"WhatsApp: {OFFICE_WHATSAPP_LINK}"
-        ),
-        'en': (
-            "You can view our full product list in the catalog:\n"
-            f"Catalog: {CATALOG_URL}\n"
-            f"WhatsApp: {OFFICE_WHATSAPP_LINK}"
-        )
-    }
-    return responses[lang]
+    t = (user_input or "").lower()
+
+    # Kullanıcı gerçekten "liste/katalog/tüm ürün" istiyorsa katalog ver
+    list_intent_keywords = [
+        "tüm", "tum", "hepsi", "list", "liste", "katalog", "catalog", "ürünleriniz", "urunleriniz", "all products"
+    ]
+    if any(k in t for k in list_intent_keywords):
+        if lang == "en":
+            return f"You can view our full product list in the catalog:\nCatalog: {CATALOG_URL}"
+        return f"Tüm ürün listemizi katalog üzerinden inceleyebilirsiniz:\nKatalog: {CATALOG_URL}"
+
+    # Aksi halde: kategori gibi görünen şeyi ürün araması gibi ele al
+    query = (category or user_input).strip()
+    return _handle_product_query(user_input, [query], retriever, lang)
 
     """Kategori sorgularını işler."""
     search_query = category or user_input
