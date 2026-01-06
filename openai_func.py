@@ -25,6 +25,10 @@ import json
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# --- YENİ: İletişim sabitleri (sadece mesajlarda kullanılacak) ---
+OFFICE_PHONE = "+90 545 659 54 31"
+OFFICE_WHATSAPP_LINK = "https://wa.me/905456595431"
+CATALOG_URL = "https://ads.ozgenplastik.com/assets/pdf/catalog/1238e9b6-fb8b-45cf-9f08-74f9e235f8d0.pdf"
 
 vector_stores = {
     "tr": None,
@@ -327,6 +331,29 @@ def openai_func(user_input):
     
     lang = detect_lang(user_input)
     vector_store = vector_stores.get(lang)
+    # --- YENİ: KATALOG / ÜRÜN LİSTESİ İSTEĞİ → DİREKT YÖNLENDİR ---
+    t = (user_input or "").lower()
+    catalog_keywords = [
+    "katalog", "catalog", "katolog", "catalogue",
+    "ürün list", "urun list", "product list", "list of products",
+    "tüm ürün", "tum urun", "all products",
+    "ürünleriniz", "urunleriniz", "products",
+    "fiyat list", "price list"]
+
+    if any(k in t for k in catalog_keywords):
+        if lang == "en":
+            return (
+            "You can view our full product list in the catalog:\n"
+            f"Catalog: {CATALOG_URL}\n"
+            f"WhatsApp: {OFFICE_WHATSAPP_LINK}"
+        )
+        else:
+            return (
+        "Tüm ürün listemizi katalog üzerinden inceleyebilirsiniz:\n"
+        f"Katalog: {CATALOG_URL}\n"
+        f"WhatsApp: {OFFICE_WHATSAPP_LINK}"
+    )
+
 
     if not chat_model_openai or not vector_store:
         error_message = {
@@ -370,7 +397,7 @@ def openai_func(user_input):
 
     else: # GENERAL_QUERY veya UNKNOWN
         return _run_general_query(user_input, retriever, lang)
-
+    
 
 def _get_query_expansion_chain(lang: str):
     """Sorgu genişletme için bir LangChain zinciri oluşturur."""
@@ -718,6 +745,21 @@ def _handle_product_query(user_input: str, products: list[str], retriever, lang:
     return "\n\n".join(all_responses)
 
 def _handle_category_query(user_input: str, category: str, retriever, lang: str):
+    """Kategori / ürün listesi sorgularını kataloğa yönlendirir."""
+    responses = {
+        'tr': (
+            "Tüm ürün listemizi katalog üzerinden inceleyebilirsiniz:\n"
+            f"Katalog: {CATALOG_URL}\n"
+            f"WhatsApp: {OFFICE_WHATSAPP_LINK}"
+        ),
+        'en': (
+            "You can view our full product list in the catalog:\n"
+            f"Catalog: {CATALOG_URL}\n"
+            f"WhatsApp: {OFFICE_WHATSAPP_LINK}"
+        )
+    }
+    return responses[lang]
+
     """Kategori sorgularını işler."""
     search_query = category or user_input
     
@@ -833,8 +875,12 @@ def _run_general_query(user_input, retriever, lang):
         answer = general_chain.invoke(user_input)
         if not answer or "bilgi bulamadım" in answer.lower() or "not find information" in answer.lower() or len(answer.strip()) < 15:
              error_message = {
-                 'tr': "Üzgünüm, bu konuda yeterli bilgi bulamadım. Detaylı bilgi için lütfen ofisimizle iletişime geçin.\n- Ofis Telefonu: +90 545 659 54 31",
-                 'en': "I'm sorry, I couldn't find enough information on this topic. For detailed information, please contact our office.\n- Office Phone: +90 545 659 54 31"
+                 'tr': (
+                 "Üzgünüm, bu konuda yeterli bilgi bulamadım. Detaylı bilgi için lütfen ofisimizle iletişime geçin.\n"
+                 f"- Ofis Telefonu: {OFFICE_PHONE}\n"
+                 f"- WhatsApp: {OFFICE_WHATSAPP_LINK}") ,
+                 'en':( "I'm sorry, I couldn't find enough information on this topic. For detailed information, please contact our office.\n- Office Phone: +90 545 659 54 31"
+                 )
              }
              return error_message[lang]
         return answer

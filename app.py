@@ -255,6 +255,7 @@ PHONE_NUMBER_ID = os.environ.get("PHONE_NUMBER_ID")
 CATALOG_URL = "https://ads.ozgenplastik.com/assets/pdf/catalog/1238e9b6-fb8b-45cf-9f08-74f9e235f8d0.pdf"
 
 
+
 @app.route("/api/whatsapp", methods=['GET', 'POST'])
 def webhook_whatsapp():
     if request.method == 'GET':
@@ -314,6 +315,18 @@ def webhook_whatsapp():
                                         except Exception as e_mem:
                                             logger.error("WhatsApp ödeme yönlendirme kaydı hatası: %s", e_mem, exc_info=True)
                                         continue
+                                         # 2.1) KATALOG / ÜRÜN LİSTESİ → DİREKT KATALOĞA YÖNLENDİR (LLM'e gitme)
+                                    if is_catalog_request(msg_body):
+                                            reply_text = (
+                                                 "Tüm ürün listemizi katalog üzerinden inceleyebilirsiniz:\n"
+                                                f"Katalog: {CATALOG_URL}\n"
+                                                "WhatsApp: https://wa.me/905456595431")
+                                            send_whatsapp_message(from_number, reply_text)
+                                            try:
+                                                memory_manager.save_conversation(f"WhatsApp-{from_number}", msg_body, reply_text)
+                                            except Exception as e_mem:
+                                                logger.error("WhatsApp katalog yönlendirme kaydı hatası: %s", e_mem, exc_info=True)
+                                            continue
 
                                     # Gelen mesajın dilini tespit et
                                     try:
@@ -338,7 +351,8 @@ def webhook_whatsapp():
                                             memory_manager.save_conversation(f"WhatsApp-{from_number}", msg_body, reply_text)
                                         except Exception as e_mem:
                                             logger.error("WhatsApp export yönlendirme kaydı hatası: %s", e_mem, exc_info=True)
-                                        continue    
+                                        continue 
+
 
                                     # Chatbot'umuzdan yanıt alalım
                                     bot_response = openai_main_func(msg_body)
@@ -375,6 +389,20 @@ def is_payment_question(text: str) -> bool:
         "kredi kart", "kredi kartı", "credit card", "card", "pos"
     ]
     return any(k in t for k in keywords)
+def is_catalog_request(text: str) -> bool:
+    if not text:
+        return False
+    t = text.lower().strip()
+
+    keywords = [
+        "katalog", "catalog", "katolog", "catalogue",
+        "ürün list", "urun list", "product list", "list of products",
+        "tüm ürün", "tum urun", "all products",
+        "ürünleriniz", "urunleriniz", "products",
+        "fiyat list", "price list"
+    ]
+    return any(k in t for k in keywords)
+
 
 def send_whatsapp_message(to_number, text_message):
     """Verilen numaraya metin mesajı gönderir."""
