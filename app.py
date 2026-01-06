@@ -320,7 +320,7 @@ def webhook_whatsapp():
                                             reply_text = (
                                                  "Tüm ürün listemizi katalog üzerinden inceleyebilirsiniz:\n"
                                                 f"Katalog: {CATALOG_URL}\n"
-                                                "WhatsApp: https://wa.me/905456595431")
+                                                )
                                             send_whatsapp_message(from_number, reply_text)
                                             try:
                                                 memory_manager.save_conversation(f"WhatsApp-{from_number}", msg_body, reply_text)
